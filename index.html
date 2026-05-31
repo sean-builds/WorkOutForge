@@ -13,89 +13,190 @@
   <link rel="apple-touch-icon" href="icon-192.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+             sendEmailVerification, sendPasswordResetEmail, signInWithPopup, GoogleAuthProvider,
+             RecaptchaVerifier, signInWithPhoneNumber, signInAnonymously, signOut,
+             updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, getDoc, updateDoc }
+             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    // ════════════════════════════════════════
+    // PASTE YOUR FIREBASE CONFIG HERE
+    // Get it from: Firebase Console → Project Settings → Your apps → Web
+    // ════════════════════════════════════════
+    const firebaseConfig = {
+      apiKey:            "PASTE_YOUR_API_KEY",
+      authDomain:        "PASTE_YOUR_AUTH_DOMAIN",
+      projectId:         "PASTE_YOUR_PROJECT_ID",
+      storageBucket:     "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+      appId:             "PASTE_YOUR_APP_ID"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // Expose to global scope for script.js
+    window._firebase = { auth, db, GoogleAuthProvider, RecaptchaVerifier,
+      signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      sendEmailVerification, sendPasswordResetEmail, signInWithPopup,
+      signInWithPhoneNumber, signInAnonymously, signOut, updateProfile,
+      onAuthStateChanged, doc, setDoc, getDoc, updateDoc };
+
+    // Auth state observer — boots the app
+    onAuthStateChanged(auth, user => {
+      if (window.App) window.App.onAuthStateChanged(user);
+    });
+  </script>
 </head>
 <body data-theme="dark">
 
-<!-- ══════════════════════════════════════════
-     SCREEN: AUTH (Login / Sign Up)
-══════════════════════════════════════════ -->
-<div id="screen-auth" class="screen active">
+<!-- ══════════════ LOADING SPLASH ══════════════ -->
+<div id="screen-loading" class="screen active center-screen">
+  <div style="text-align:center">
+    <div style="font-size:56px;animation:bounce 1.5s ease-in-out infinite">⚡</div>
+    <div style="font-family:var(--font-h);font-size:32px;font-weight:900;margin-top:12px;letter-spacing:-1px">WORKOUTFORGE</div>
+    <div style="color:var(--text2);margin-top:8px;font-size:14px">Loading…</div>
+  </div>
+</div>
+
+<!-- ══════════════ AUTH SCREEN ══════════════ -->
+<div id="screen-auth" class="screen">
   <div class="auth-bg"><div class="forge-glow"></div></div>
-  <div class="auth-content">
-    <div class="logo-mark">⚡</div>
-    <h1 class="app-title">WORKOUT<br/><span class="accent">FORGE</span></h1>
-    <p class="app-subtitle">Build your perfect training plan.</p>
+  <div class="auth-scroll">
+    <div class="auth-content">
+      <div class="logo-mark">⚡</div>
+      <h1 class="app-title">WORKOUT<br/><span class="accent">FORGE</span></h1>
+      <p class="app-subtitle">Build your perfect training plan.</p>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="Auth.showTab('login')">Sign In</button>
-      <button class="auth-tab" id="tab-signup" onclick="Auth.showTab('signup')">Sign Up</button>
-    </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="Auth.showTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" onclick="Auth.showTab('signup')">Sign Up</button>
+      </div>
 
-    <!-- Login panel -->
-    <div class="auth-panel" id="panel-login">
-      <div class="oauth-grid">
-        <button class="oauth-btn" onclick="Auth.oauthLogin('google')">
-          <span class="oauth-icon">G</span> Google
+      <!-- SIGN IN -->
+      <div class="auth-panel" id="panel-login">
+        <button class="oauth-btn google-btn" onclick="Auth.googleSignIn()">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.5 30.2 0 24 0 14.7 0 6.7 5.4 2.7 13.3l7.9 6.1C12.5 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z" /><path fill="#FBBC05" d="M10.6 28.6A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.1.7-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.9 6.1C6.7 42.6 14.7 48 24 48z"/></svg>
+          Continue with Google
         </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('apple')">
-          <span class="oauth-icon">🍎</span> Apple
-        </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('microsoft')">
-          <span class="oauth-icon">⊞</span> Microsoft
-        </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('phone')">
-          <span class="oauth-icon">📱</span> Phone
-        </button>
+        <div class="auth-divider"><span>or sign in with email</span></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@email.com" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div id="login-error" class="error-msg hidden"></div>
+        <button class="btn btn-primary btn-full" onclick="Auth.emailSignIn()">Sign In →</button>
+        <button class="btn-link" onclick="Auth.showForgotPassword()">Forgot Password?</button>
+        <div class="auth-divider"><span>or</span></div>
+        <button class="btn btn-outline btn-full" onclick="Auth.phoneSignIn()">📱 Continue with Phone</button>
+        <button class="btn-ghost" onclick="Auth.guestSignIn()">Continue as Guest →</button>
       </div>
-      <div class="auth-divider"><span>or</span></div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="you@email.com" autocomplete="email"/>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
-      </div>
-      <div id="login-error" class="error-msg hidden"></div>
-      <button class="btn btn-primary btn-full" onclick="Auth.emailLogin()">Sign In →</button>
-      <button class="btn-ghost" onclick="Auth.guestMode()">Continue as Guest</button>
-    </div>
 
-    <!-- Signup panel -->
-    <div class="auth-panel hidden" id="panel-signup">
-      <div class="oauth-grid">
-        <button class="oauth-btn" onclick="Auth.oauthLogin('google')">
-          <span class="oauth-icon">G</span> Google
+      <!-- SIGN UP -->
+      <div class="auth-panel hidden" id="panel-signup">
+        <button class="oauth-btn google-btn" onclick="Auth.googleSignIn()">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.5 30.2 0 24 0 14.7 0 6.7 5.4 2.7 13.3l7.9 6.1C12.5 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z"/><path fill="#FBBC05" d="M10.6 28.6A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.1.7-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.9 6.1C6.7 42.6 14.7 48 24 48z"/></svg>
+          Sign Up with Google
         </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('apple')">
-          <span class="oauth-icon">🍎</span> Apple
-        </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('microsoft')">
-          <span class="oauth-icon">⊞</span> Microsoft
-        </button>
-        <button class="oauth-btn" onclick="Auth.oauthLogin('phone')">
-          <span class="oauth-icon">📱</span> Phone
-        </button>
+        <div class="auth-divider"><span>or create an account</span></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label>Password (min 8 characters)</label>
+          <input type="password" id="signup-pass" placeholder="••••••••" autocomplete="new-password"/>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="signup-confirm" placeholder="••••••••" autocomplete="new-password"/>
+        </div>
+        <div id="signup-error" class="error-msg hidden"></div>
+        <button class="btn btn-primary btn-full" onclick="Auth.emailSignUp()">Create Account →</button>
+        <div class="auth-divider"><span>or</span></div>
+        <button class="btn btn-outline btn-full" onclick="Auth.phoneSignIn()">📱 Continue with Phone</button>
+        <button class="btn-ghost" onclick="Auth.guestSignIn()">Continue as Guest →</button>
       </div>
-      <div class="auth-divider"><span>or</span></div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email"/>
+
+      <!-- FORGOT PASSWORD -->
+      <div class="auth-panel hidden" id="panel-forgot">
+        <p style="color:var(--text2);font-size:14px;margin-bottom:16px">Enter your email and we'll send a reset link.</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="forgot-email" placeholder="you@email.com"/>
+        </div>
+        <div id="forgot-error" class="error-msg hidden"></div>
+        <div id="forgot-success" class="success-msg hidden"></div>
+        <button class="btn btn-primary btn-full" onclick="Auth.sendPasswordReset()">Send Reset Email</button>
+        <button class="btn-link" onclick="Auth.showTab('login')">← Back to Sign In</button>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="signup-pass" placeholder="Min 6 characters" autocomplete="new-password"/>
+
+      <!-- PHONE AUTH -->
+      <div class="auth-panel hidden" id="panel-phone">
+        <div id="phone-step-1">
+          <p style="color:var(--text2);font-size:14px;margin-bottom:16px">We'll send a verification code via SMS.</p>
+          <div class="form-group">
+            <label>Phone Number (with country code)</label>
+            <input type="tel" id="phone-number" placeholder="+1 555 000 0000"/>
+          </div>
+          <div id="recaptcha-container"></div>
+          <div id="phone-error" class="error-msg hidden"></div>
+          <button class="btn btn-primary btn-full" onclick="Auth.sendSMS()">Send Code →</button>
+        </div>
+        <div id="phone-step-2" class="hidden">
+          <p style="color:var(--text2);font-size:14px;margin-bottom:16px">Enter the 6-digit code sent to your phone.</p>
+          <div class="form-group">
+            <label>Verification Code</label>
+            <input type="number" id="sms-code" placeholder="123456" maxlength="6"/>
+          </div>
+          <div id="sms-error" class="error-msg hidden"></div>
+          <button class="btn btn-primary btn-full" onclick="Auth.verifySMS()">Verify Code →</button>
+          <button class="btn-link" onclick="Auth.resetPhone()">← Change Number</button>
+        </div>
+        <button class="btn-link" onclick="Auth.showTab('login')" style="margin-top:8px">← Back</button>
       </div>
-      <div id="signup-error" class="error-msg hidden"></div>
-      <button class="btn btn-primary btn-full" onclick="Auth.emailSignup()">Create Account →</button>
-      <button class="btn-ghost" onclick="Auth.guestMode()">Continue as Guest</button>
+
+      <!-- EMAIL VERIFY NOTICE -->
+      <div class="auth-panel hidden" id="panel-verify">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:56px">📧</div>
+          <h3 style="font-family:var(--font-h);font-size:28px;font-weight:800;margin:12px 0 8px">Check Your Email</h3>
+          <p style="color:var(--text2);font-size:14px;line-height:1.6">We sent a verification link to<br/><strong id="verify-email-display" style="color:var(--accent)"></strong></p>
+          <p style="color:var(--text2);font-size:13px;margin-top:12px">Click the link in your email, then come back and sign in.</p>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="Auth.showTab('login')">Go to Sign In</button>
+        <button class="btn-link" onclick="Auth.resendVerification()">Resend verification email</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: PROFILE SETUP
-══════════════════════════════════════════ -->
+<!-- ══════════════ NAME SCREEN ══════════════ -->
+<div id="screen-name" class="screen center-screen">
+  <div class="name-content">
+    <div style="font-size:48px">👋</div>
+    <h2 class="screen-title" style="text-align:center">What should we<br/>call you?</h2>
+    <p class="screen-sub" style="text-align:center">This is how WorkoutForge will greet you.</p>
+    <div class="form-group" style="width:100%">
+      <label>Your Name</label>
+      <input type="text" id="display-name" placeholder="e.g. Alex" maxlength="30" autocomplete="given-name"
+             style="text-align:center;font-size:20px;padding:18px"/>
+    </div>
+    <div id="name-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.saveName()">Let's Go →</button>
+  </div>
+</div>
+
+<!-- ══════════════ PROFILE SETUP ══════════════ -->
 <div id="screen-profile" class="screen">
   <div class="screen-header">
     <div class="step-indicator">
@@ -104,7 +205,7 @@
   </div>
   <div class="screen-body">
     <h2 class="screen-title">About You</h2>
-    <p class="screen-sub">Let's personalise your plan. You can edit this anytime.</p>
+    <p class="screen-sub">Personalises your weights, plan and intensity.</p>
     <div class="form-grid">
       <div class="form-group">
         <label>Age</label>
@@ -141,9 +242,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: TRAINING STYLE
-══════════════════════════════════════════ -->
+<!-- ══════════════ TRAINING STYLE (multi-select) ══════════════ -->
 <div id="screen-style" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="App.go('profile')">←</button>
@@ -152,28 +251,44 @@
     </div>
   </div>
   <div class="screen-body">
-    <h2 class="screen-title">Training Style</h2>
-    <p class="screen-sub">Choose your primary discipline.</p>
-    <div class="card-grid" id="style-cards">
-      <button class="style-card" data-val="weights" onclick="App.selectCard(this,'style-cards')">
+    <h2 class="screen-title">Training Styles</h2>
+    <p class="screen-sub">Select all that apply — your plan will blend them.</p>
+    <div class="multi-card-grid" id="style-cards">
+      <button class="multi-card" data-val="weights" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
         <div class="card-icon">🏋️</div>
         <div class="card-label">Weight Training</div>
         <div class="card-desc">Barbells, dumbbells & machines</div>
       </button>
-      <button class="style-card" data-val="calisthenics" onclick="App.selectCard(this,'style-cards')">
+      <button class="multi-card" data-val="calisthenics" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
         <div class="card-icon">💪</div>
         <div class="card-label">Calisthenics</div>
         <div class="card-desc">Bodyweight mastery</div>
       </button>
-      <button class="style-card" data-val="yoga" onclick="App.selectCard(this,'style-cards')">
+      <button class="multi-card" data-val="yoga" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
         <div class="card-icon">🧘</div>
         <div class="card-label">Yoga</div>
-        <div class="card-desc">Mind-body connection</div>
+        <div class="card-desc">Flexibility & mindfulness</div>
       </button>
-      <button class="style-card" data-val="pilates" onclick="App.selectCard(this,'style-cards')">
+      <button class="multi-card" data-val="pilates" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
         <div class="card-icon">🌀</div>
         <div class="card-label">Pilates</div>
         <div class="card-desc">Core strength & control</div>
+      </button>
+      <button class="multi-card" data-val="hiit" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
+        <div class="card-icon">⚡</div>
+        <div class="card-label">HIIT</div>
+        <div class="card-desc">High intensity intervals</div>
+      </button>
+      <button class="multi-card" data-val="cardio" onclick="App.toggleMultiCard(this)">
+        <div class="multi-check">✓</div>
+        <div class="card-icon">🏃</div>
+        <div class="card-label">Cardio</div>
+        <div class="card-desc">Running, cycling, rowing</div>
       </button>
     </div>
     <div id="style-error" class="error-msg hidden"></div>
@@ -181,9 +296,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: GOAL
-══════════════════════════════════════════ -->
+<!-- ══════════════ GOAL ══════════════ -->
 <div id="screen-goal" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="App.go('style')">←</button>
@@ -213,7 +326,7 @@
         <div class="goal-icon">🔥</div>
         <div>
           <div class="goal-label">Fat Loss</div>
-          <div class="goal-desc">12–15 reps · short rest · circuit style · calorie burn</div>
+          <div class="goal-desc">12–15 reps · circuit style · 30–60s rest · calorie burn</div>
         </div>
       </button>
       <button class="goal-card" data-val="general" onclick="App.selectCard(this,'goal-cards')">
@@ -229,9 +342,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: SCHEDULE
-══════════════════════════════════════════ -->
+<!-- ══════════════ SCHEDULE ══════════════ -->
 <div id="screen-schedule" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="App.go('goal')">←</button>
@@ -246,12 +357,12 @@
       <button class="choice-btn" id="btn-recommended" onclick="App.showRecommended()">
         <div class="choice-icon">✨</div>
         <div class="choice-label">Recommended</div>
-        <div class="choice-desc">Science-based schedule for your level</div>
+        <div class="choice-desc">Science-based for your level</div>
       </button>
       <button class="choice-btn" id="btn-custom" onclick="App.showCustom()">
         <div class="choice-icon">🗓️</div>
         <div class="choice-label">Custom</div>
-        <div class="choice-desc">Pick your own workout days</div>
+        <div class="choice-desc">Pick your own days</div>
       </button>
     </div>
     <div id="recommended-section" class="hidden sub-section">
@@ -281,22 +392,18 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: NOTIFICATION PERMISSION
-══════════════════════════════════════════ -->
-<div id="screen-notif-prompt" class="screen">
+<!-- ══════════════ NOTIFICATION PROMPT ══════════════ -->
+<div id="screen-notif-prompt" class="screen center-screen">
   <div class="notif-prompt-content">
     <div class="notif-icon">🔔</div>
-    <h2 class="screen-title">Stay on Track</h2>
-    <p class="screen-sub">WorkoutForge can send you a daily reminder so you never miss a session. You can turn this off anytime.</p>
+    <h2 class="screen-title" style="text-align:center">Stay on Track</h2>
+    <p class="screen-sub" style="text-align:center">Get a daily reminder so you never miss a session. You can turn this off anytime.</p>
     <button class="btn btn-primary btn-full" onclick="App.requestNotifPermission()">Allow Notifications</button>
     <button class="btn-ghost" onclick="App.skipNotif()">Skip for now</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: DASHBOARD
-══════════════════════════════════════════ -->
+<!-- ══════════════ DASHBOARD ══════════════ -->
 <div id="screen-dashboard" class="screen">
   <div class="dashboard-header">
     <div>
@@ -305,7 +412,6 @@
     </div>
     <button class="icon-btn" onclick="App.go('settings')">⚙️</button>
   </div>
-
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-val" id="stat-streak">0</div>
@@ -320,7 +426,6 @@
       <div class="stat-label">This Week</div>
     </div>
   </div>
-
   <div class="section-label">TODAY</div>
   <div class="today-card" id="today-card">
     <div class="today-inner">
@@ -332,61 +437,87 @@
     </div>
     <div class="today-exercises" id="today-exercises"></div>
   </div>
-
-  <div class="section-label">THIS WEEK — tap any day to view</div>
+  <div class="section-label">THIS WEEK — tap any day</div>
   <div class="week-cards" id="week-cards"></div>
-
   <div style="height:80px"></div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: DAY PREVIEW (browse any day)
-══════════════════════════════════════════ -->
+<!-- ══════════════ DAY PREVIEW ══════════════ -->
 <div id="screen-day-preview" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="App.go('dashboard')">←</button>
   </div>
   <div class="screen-body">
-    <div class="day-preview-tag" id="preview-day-tag">Monday</div>
-    <h2 class="screen-title" id="preview-day-name">Push Day</h2>
+    <div class="day-preview-tag" id="preview-day-tag"></div>
+    <h2 class="screen-title" id="preview-day-name"></h2>
     <p class="screen-sub" id="preview-day-meta"></p>
     <div id="preview-exercise-list" class="preview-ex-list"></div>
-    <button class="btn btn-primary btn-full" id="preview-start-btn" onclick="App.startPreviewWorkout()">Start This Workout →</button>
-    <button class="btn btn-outline btn-full" onclick="App.go('dashboard')" style="margin-top:10px">Back</button>
+    <button class="btn btn-primary btn-full" id="preview-start-btn" onclick="App.startPreviewWorkout()">Start Workout →</button>
+    <button class="btn btn-outline btn-full" onclick="App.go('dashboard')" style="margin-top:10px">← Back</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: ACTIVE WORKOUT
-══════════════════════════════════════════ -->
+<!-- ══════════════ EXERCISE DETAIL ══════════════ -->
+<div id="screen-exercise-detail" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" id="ex-detail-back" onclick="App.closeExerciseDetail()">←</button>
+  </div>
+  <div class="screen-body">
+    <div class="ex-detail-badge" id="ex-detail-difficulty"></div>
+    <h2 class="screen-title" id="ex-detail-name"></h2>
+    <div class="ex-detail-tags" id="ex-detail-muscles"></div>
+
+    <div class="ex-detail-video" id="ex-detail-video"></div>
+
+    <div class="ex-detail-section">
+      <div class="ex-detail-section-title">Equipment</div>
+      <div class="ex-detail-text" id="ex-detail-equipment"></div>
+    </div>
+    <div class="ex-detail-section">
+      <div class="ex-detail-section-title">How to do it</div>
+      <ol class="ex-detail-steps" id="ex-detail-instructions"></ol>
+    </div>
+    <div class="ex-detail-section">
+      <div class="ex-detail-section-title">⚠️ Common Mistakes</div>
+      <ul class="ex-detail-list" id="ex-detail-mistakes"></ul>
+    </div>
+    <div class="ex-detail-section">
+      <div class="ex-detail-section-title">🛡️ Safety Notes</div>
+      <ul class="ex-detail-list" id="ex-detail-safety"></ul>
+    </div>
+    <div class="ex-detail-recs">
+      <div class="ex-rec"><div class="ex-rec-val" id="ex-rec-sets">—</div><div class="ex-rec-label">Sets</div></div>
+      <div class="ex-rec"><div class="ex-rec-val" id="ex-rec-reps">—</div><div class="ex-rec-label">Reps</div></div>
+      <div class="ex-rec"><div class="ex-rec-val" id="ex-rec-rest">—</div><div class="ex-rec-label">Rest</div></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ACTIVE WORKOUT ══════════════ -->
 <div id="screen-workout" class="screen">
   <div class="workout-header">
     <button class="btn-back" onclick="App.go('dashboard')">←</button>
     <div>
-      <div class="workout-day-label" id="workout-day-label">Monday</div>
-      <div class="workout-name-label" id="workout-name-label">Push Day</div>
+      <div class="workout-day-label" id="workout-day-label"></div>
+      <div class="workout-name-label" id="workout-name-label"></div>
     </div>
     <div class="workout-prog-text" id="workout-prog-text">0/0</div>
   </div>
-  <div class="workout-progress-bar">
-    <div class="workout-progress-fill" id="workout-progress-fill"></div>
-  </div>
-  <div class="set-hint">👇 Tap each circle below to mark a set complete</div>
+  <div class="workout-progress-bar"><div class="workout-progress-fill" id="workout-progress-fill"></div></div>
+  <div class="set-hint">👇 Tap each circle to mark a set complete</div>
   <div id="exercise-list" class="exercise-list"></div>
   <div class="workout-footer">
-    <button class="btn btn-primary btn-full finish-btn" id="finish-btn" onclick="App.finishWorkout()">
-      ✓ Complete Workout
-    </button>
+    <button class="btn btn-primary btn-full finish-btn" onclick="App.finishWorkout()">✓ Complete Workout</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: WORKOUT COMPLETE
-══════════════════════════════════════════ -->
+<!-- ══════════════ WORKOUT COMPLETE ══════════════ -->
 <div id="screen-complete" class="screen center-screen">
   <div class="complete-content">
     <div class="complete-burst">⚡</div>
     <h2 class="complete-title">WORKOUT<br/>COMPLETE</h2>
+    <div class="complete-congrats" id="complete-congrats"></div>
     <div class="complete-stats">
       <div class="c-stat"><div class="c-val" id="c-exercises">0</div><div class="c-label">Exercises</div></div>
       <div class="c-stat"><div class="c-val" id="c-pct">0%</div><div class="c-label">Completion</div></div>
@@ -396,21 +527,16 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: SETTINGS
-══════════════════════════════════════════ -->
+<!-- ══════════════ SETTINGS ══════════════ -->
 <div id="screen-settings" class="screen">
-  <div class="screen-header">
-    <button class="btn-back" onclick="App.go('dashboard')">←</button>
-  </div>
+  <div class="screen-header"><button class="btn-back" onclick="App.go('dashboard')">←</button></div>
   <div class="screen-body">
     <h2 class="screen-title">Settings</h2>
-
     <div class="settings-section-label">Account</div>
     <div class="settings-list">
       <div class="settings-item">
         <div class="settings-label">Signed in as</div>
-        <div class="settings-value" id="settings-user">Guest</div>
+        <div class="settings-value" id="settings-user">—</div>
       </div>
       <div class="settings-item tappable" onclick="App.go('edit-profile')">
         <div class="settings-label">Edit Profile & Goals</div>
@@ -421,7 +547,6 @@
         <div class="settings-value" id="settings-reminder">Not set</div>
       </div>
     </div>
-
     <div class="settings-section-label">Appearance</div>
     <div class="settings-list">
       <div class="settings-item">
@@ -432,7 +557,6 @@
         </div>
       </div>
     </div>
-
     <div class="settings-section-label">Data</div>
     <div class="settings-list">
       <div class="settings-item tappable" onclick="App.exportData()">
@@ -446,43 +570,25 @@
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="App.importData(event)"/>
       <div class="settings-item tappable danger" onclick="App.resetData()">
         <div class="settings-label">Reset All Data</div>
-        <div class="settings-arrow danger">✕</div>
+        <div class="settings-arrow" style="color:var(--danger)">✕</div>
       </div>
     </div>
-
-    <div class="settings-item tappable" onclick="Auth.signOut()" style="margin-top:16px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)">
-      <div class="settings-label" style="color:var(--danger)">Sign Out</div>
-    </div>
-
-    <div class="settings-version">WorkoutForge v2.0 · Evidence-based programming</div>
+    <button class="btn btn-danger btn-full" onclick="Auth.doSignOut()" style="margin-top:20px">Sign Out</button>
+    <div class="settings-version">WorkoutForge v3.0 · Firebase Auth · Evidence-based</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: EDIT PROFILE
-══════════════════════════════════════════ -->
+<!-- ══════════════ EDIT PROFILE ══════════════ -->
 <div id="screen-edit-profile" class="screen">
-  <div class="screen-header">
-    <button class="btn-back" onclick="App.go('settings')">←</button>
-  </div>
+  <div class="screen-header"><button class="btn-back" onclick="App.go('settings')">←</button></div>
   <div class="screen-body">
     <h2 class="screen-title">Edit Profile</h2>
     <p class="screen-sub">Changes rebuild your workout plan.</p>
     <div class="form-grid">
-      <div class="form-group">
-        <label>Age</label>
-        <input type="number" id="ep-age" placeholder="25" min="13" max="99"/>
-      </div>
-      <div class="form-group">
-        <label>Weight (kg)</label>
-        <input type="number" id="ep-weight" placeholder="70" min="30" max="300"/>
-      </div>
-      <div class="form-group">
-        <label>Height (cm)</label>
-        <input type="number" id="ep-height" placeholder="175" min="100" max="250"/>
-      </div>
-      <div class="form-group">
-        <label>Gender</label>
+      <div class="form-group"><label>Age</label><input type="number" id="ep-age" placeholder="25" min="13" max="99"/></div>
+      <div class="form-group"><label>Weight (kg)</label><input type="number" id="ep-weight" placeholder="70"/></div>
+      <div class="form-group"><label>Height (cm)</label><input type="number" id="ep-height" placeholder="175"/></div>
+      <div class="form-group"><label>Gender</label>
         <select id="ep-gender">
           <option value="">Select…</option>
           <option value="male">Male</option>
@@ -491,25 +597,14 @@
         </select>
       </div>
     </div>
-    <div class="form-group full">
-      <label>Experience</label>
+    <div class="form-group full"><label>Experience</label>
       <div class="pill-group" id="ep-experience">
         <button class="pill" data-val="beginner" onclick="App.selectPill(this,'ep-experience')">Beginner</button>
         <button class="pill" data-val="intermediate" onclick="App.selectPill(this,'ep-experience')">Intermediate</button>
         <button class="pill" data-val="advanced" onclick="App.selectPill(this,'ep-experience')">Advanced</button>
       </div>
     </div>
-    <div class="form-group full">
-      <label>Training Style</label>
-      <div class="pill-group" id="ep-style">
-        <button class="pill" data-val="weights" onclick="App.selectPill(this,'ep-style')">Weights</button>
-        <button class="pill" data-val="calisthenics" onclick="App.selectPill(this,'ep-style')">Calisthenics</button>
-        <button class="pill" data-val="yoga" onclick="App.selectPill(this,'ep-style')">Yoga</button>
-        <button class="pill" data-val="pilates" onclick="App.selectPill(this,'ep-style')">Pilates</button>
-      </div>
-    </div>
-    <div class="form-group full">
-      <label>Goal</label>
+    <div class="form-group full"><label>Goal</label>
       <div class="pill-group" id="ep-goal">
         <button class="pill" data-val="strength" onclick="App.selectPill(this,'ep-goal')">Strength</button>
         <button class="pill" data-val="muscle" onclick="App.selectPill(this,'ep-goal')">Muscle</button>
@@ -522,19 +617,14 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: NOTIFICATIONS
-══════════════════════════════════════════ -->
+<!-- ══════════════ NOTIFICATIONS ══════════════ -->
 <div id="screen-notifications" class="screen">
-  <div class="screen-header">
-    <button class="btn-back" onclick="App.go('settings')">←</button>
-  </div>
+  <div class="screen-header"><button class="btn-back" onclick="App.go('settings')">←</button></div>
   <div class="screen-body">
     <h2 class="screen-title">Reminder</h2>
     <p class="screen-sub">Get notified when it's time to train.</p>
     <div id="notif-status" class="warn-msg hidden"></div>
-    <div class="form-group full">
-      <label>Reminder Time</label>
+    <div class="form-group full"><label>Reminder Time</label>
       <div class="pill-group" id="reminder-time-group">
         <button class="pill" data-val="06:00" onclick="App.selectPill(this,'reminder-time-group')">6:00 AM</button>
         <button class="pill" data-val="12:00" onclick="App.selectPill(this,'reminder-time-group')">12:00 PM</button>
@@ -546,20 +636,14 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     DISCLAIMER
-══════════════════════════════════════════ -->
-<div id="disclaimer" class="disclaimer hidden">
-  ⚠️ Weight suggestions are estimates only. Consult a fitness professional before starting a new programme.
-</div>
+<div id="disclaimer" class="disclaimer hidden">⚠️ Weight suggestions are estimates. Consult a fitness professional before starting a new programme.</div>
+<div id="toast" class="toast hidden"></div>
 
+<script src="script.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function(){});
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(()=>{}));
   }
 </script>
-<script src="script.js"></script>
 </body>
 </html>
