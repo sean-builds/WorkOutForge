@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0a0a0f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="WorkoutForge"/>
+  <title>WorkoutForge</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body data-theme="dark">
+
+<!-- ══════════════════════════════════════════
+     SCREEN: AUTH (Login / Sign Up)
+══════════════════════════════════════════ -->
+<div id="screen-auth" class="screen active">
+  <div class="auth-bg"><div class="forge-glow"></div></div>
+  <div class="auth-content">
+    <div class="logo-mark">⚡</div>
+    <h1 class="app-title">WORKOUT<br/><span class="accent">FORGE</span></h1>
+    <p class="app-subtitle">Build your perfect training plan.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="Auth.showTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="Auth.showTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Login panel -->
+    <div class="auth-panel" id="panel-login">
+      <div class="oauth-grid">
+        <button class="oauth-btn" onclick="Auth.oauthLogin('google')">
+          <span class="oauth-icon">G</span> Google
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('apple')">
+          <span class="oauth-icon">🍎</span> Apple
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('microsoft')">
+          <span class="oauth-icon">⊞</span> Microsoft
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('phone')">
+          <span class="oauth-icon">📱</span> Phone
+        </button>
+      </div>
+      <div class="auth-divider"><span>or</span></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@email.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div id="login-error" class="error-msg hidden"></div>
+      <button class="btn btn-primary btn-full" onclick="Auth.emailLogin()">Sign In →</button>
+      <button class="btn-ghost" onclick="Auth.guestMode()">Continue as Guest</button>
+    </div>
+
+    <!-- Signup panel -->
+    <div class="auth-panel hidden" id="panel-signup">
+      <div class="oauth-grid">
+        <button class="oauth-btn" onclick="Auth.oauthLogin('google')">
+          <span class="oauth-icon">G</span> Google
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('apple')">
+          <span class="oauth-icon">🍎</span> Apple
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('microsoft')">
+          <span class="oauth-icon">⊞</span> Microsoft
+        </button>
+        <button class="oauth-btn" onclick="Auth.oauthLogin('phone')">
+          <span class="oauth-icon">📱</span> Phone
+        </button>
+      </div>
+      <div class="auth-divider"><span>or</span></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-pass" placeholder="Min 6 characters" autocomplete="new-password"/>
+      </div>
+      <div id="signup-error" class="error-msg hidden"></div>
+      <button class="btn btn-primary btn-full" onclick="Auth.emailSignup()">Create Account →</button>
+      <button class="btn-ghost" onclick="Auth.guestMode()">Continue as Guest</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: PROFILE SETUP
+══════════════════════════════════════════ -->
+<div id="screen-profile" class="screen">
+  <div class="screen-header">
+    <div class="step-indicator">
+      <span class="step active"></span><span class="step"></span><span class="step"></span><span class="step"></span>
+    </div>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">About You</h2>
+    <p class="screen-sub">Let's personalise your plan. You can edit this anytime.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Age</label>
+        <input type="number" id="p-age" placeholder="25" min="13" max="99"/>
+      </div>
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="p-weight" placeholder="70" min="30" max="300"/>
+      </div>
+      <div class="form-group">
+        <label>Height (cm)</label>
+        <input type="number" id="p-height" placeholder="175" min="100" max="250"/>
+      </div>
+      <div class="form-group">
+        <label>Gender</label>
+        <select id="p-gender">
+          <option value="">Select…</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other / Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group full">
+      <label>Experience Level</label>
+      <div class="pill-group" id="p-experience">
+        <button class="pill" data-val="beginner" onclick="App.selectPill(this,'p-experience')">Beginner</button>
+        <button class="pill" data-val="intermediate" onclick="App.selectPill(this,'p-experience')">Intermediate</button>
+        <button class="pill" data-val="advanced" onclick="App.selectPill(this,'p-experience')">Advanced</button>
+      </div>
+    </div>
+    <div id="profile-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.submitProfile()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: TRAINING STYLE
+══════════════════════════════════════════ -->
+<div id="screen-style" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('profile')">←</button>
+    <div class="step-indicator">
+      <span class="step done"></span><span class="step active"></span><span class="step"></span><span class="step"></span>
+    </div>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Training Style</h2>
+    <p class="screen-sub">Choose your primary discipline.</p>
+    <div class="card-grid" id="style-cards">
+      <button class="style-card" data-val="weights" onclick="App.selectCard(this,'style-cards')">
+        <div class="card-icon">🏋️</div>
+        <div class="card-label">Weight Training</div>
+        <div class="card-desc">Barbells, dumbbells & machines</div>
+      </button>
+      <button class="style-card" data-val="calisthenics" onclick="App.selectCard(this,'style-cards')">
+        <div class="card-icon">💪</div>
+        <div class="card-label">Calisthenics</div>
+        <div class="card-desc">Bodyweight mastery</div>
+      </button>
+      <button class="style-card" data-val="yoga" onclick="App.selectCard(this,'style-cards')">
+        <div class="card-icon">🧘</div>
+        <div class="card-label">Yoga</div>
+        <div class="card-desc">Mind-body connection</div>
+      </button>
+      <button class="style-card" data-val="pilates" onclick="App.selectCard(this,'style-cards')">
+        <div class="card-icon">🌀</div>
+        <div class="card-label">Pilates</div>
+        <div class="card-desc">Core strength & control</div>
+      </button>
+    </div>
+    <div id="style-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.submitStyle()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: GOAL
+══════════════════════════════════════════ -->
+<div id="screen-goal" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('style')">←</button>
+    <div class="step-indicator">
+      <span class="step done"></span><span class="step done"></span><span class="step active"></span><span class="step"></span>
+    </div>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Your Goal</h2>
+    <p class="screen-sub">This shapes your sets, reps, and rest times.</p>
+    <div class="goal-list" id="goal-cards">
+      <button class="goal-card" data-val="strength" onclick="App.selectCard(this,'goal-cards')">
+        <div class="goal-icon">🔩</div>
+        <div>
+          <div class="goal-label">Strength</div>
+          <div class="goal-desc">3–5 reps · heavy load · 3–5 min rest · neural power</div>
+        </div>
+      </button>
+      <button class="goal-card" data-val="muscle" onclick="App.selectCard(this,'goal-cards')">
+        <div class="goal-icon">🏆</div>
+        <div>
+          <div class="goal-label">Muscle Growth</div>
+          <div class="goal-desc">6–12 reps · moderate load · 60–90s rest · hypertrophy</div>
+        </div>
+      </button>
+      <button class="goal-card" data-val="fatloss" onclick="App.selectCard(this,'goal-cards')">
+        <div class="goal-icon">🔥</div>
+        <div>
+          <div class="goal-label">Fat Loss</div>
+          <div class="goal-desc">12–15 reps · short rest · circuit style · calorie burn</div>
+        </div>
+      </button>
+      <button class="goal-card" data-val="general" onclick="App.selectCard(this,'goal-cards')">
+        <div class="goal-icon">⭐</div>
+        <div>
+          <div class="goal-label">General Fitness</div>
+          <div class="goal-desc">8–12 reps · balanced · 90s rest · health & longevity</div>
+        </div>
+      </button>
+    </div>
+    <div id="goal-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.submitGoal()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SCHEDULE
+══════════════════════════════════════════ -->
+<div id="screen-schedule" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('goal')">←</button>
+    <div class="step-indicator">
+      <span class="step done"></span><span class="step done"></span><span class="step done"></span><span class="step active"></span>
+    </div>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Schedule</h2>
+    <p class="screen-sub">How do you want to plan your week?</p>
+    <div class="schedule-choice">
+      <button class="choice-btn" id="btn-recommended" onclick="App.showRecommended()">
+        <div class="choice-icon">✨</div>
+        <div class="choice-label">Recommended</div>
+        <div class="choice-desc">Science-based schedule for your level</div>
+      </button>
+      <button class="choice-btn" id="btn-custom" onclick="App.showCustom()">
+        <div class="choice-icon">🗓️</div>
+        <div class="choice-label">Custom</div>
+        <div class="choice-desc">Pick your own workout days</div>
+      </button>
+    </div>
+    <div id="recommended-section" class="hidden sub-section">
+      <h3 class="sub-title">Training Intensity</h3>
+      <div class="pill-group" id="intensity-group">
+        <button class="pill" data-val="easy" onclick="App.selectPill(this,'intensity-group')">Easy Progress</button>
+        <button class="pill" data-val="balanced" onclick="App.selectPill(this,'intensity-group')">Balanced</button>
+        <button class="pill" data-val="fast" onclick="App.selectPill(this,'intensity-group')">Fast Progress</button>
+      </div>
+      <div id="recommended-preview" class="schedule-preview hidden"></div>
+    </div>
+    <div id="custom-section" class="hidden sub-section">
+      <h3 class="sub-title">Select Workout Days</h3>
+      <div class="days-grid" id="days-grid">
+        <button class="day-btn" data-day="Mon" onclick="App.toggleDay(this)">Mon</button>
+        <button class="day-btn" data-day="Tue" onclick="App.toggleDay(this)">Tue</button>
+        <button class="day-btn" data-day="Wed" onclick="App.toggleDay(this)">Wed</button>
+        <button class="day-btn" data-day="Thu" onclick="App.toggleDay(this)">Thu</button>
+        <button class="day-btn" data-day="Fri" onclick="App.toggleDay(this)">Fri</button>
+        <button class="day-btn" data-day="Sat" onclick="App.toggleDay(this)">Sat</button>
+        <button class="day-btn" data-day="Sun" onclick="App.toggleDay(this)">Sun</button>
+      </div>
+      <p class="hint">Select at least 2 days</p>
+    </div>
+    <div id="schedule-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.submitSchedule()">Generate My Plan →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: NOTIFICATION PERMISSION
+══════════════════════════════════════════ -->
+<div id="screen-notif-prompt" class="screen">
+  <div class="notif-prompt-content">
+    <div class="notif-icon">🔔</div>
+    <h2 class="screen-title">Stay on Track</h2>
+    <p class="screen-sub">WorkoutForge can send you a daily reminder so you never miss a session. You can turn this off anytime.</p>
+    <button class="btn btn-primary btn-full" onclick="App.requestNotifPermission()">Allow Notifications</button>
+    <button class="btn-ghost" onclick="App.skipNotif()">Skip for now</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: DASHBOARD
+══════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="dashboard-header">
+    <div>
+      <div class="greeting" id="dash-greeting">Good morning</div>
+      <h2 class="dash-name" id="dash-name">Athlete</h2>
+    </div>
+    <button class="icon-btn" onclick="App.go('settings')">⚙️</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-streak">0</div>
+      <div class="stat-label">🔥 Streak</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-total">0</div>
+      <div class="stat-label">Workouts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-week">0%</div>
+      <div class="stat-label">This Week</div>
+    </div>
+  </div>
+
+  <div class="section-label">TODAY</div>
+  <div class="today-card" id="today-card">
+    <div class="today-inner">
+      <div>
+        <div class="today-tag" id="today-tag">Rest Day</div>
+        <div class="today-workout-name" id="today-name">Recovery</div>
+      </div>
+      <div class="today-arrow" id="today-arrow">→</div>
+    </div>
+    <div class="today-exercises" id="today-exercises"></div>
+  </div>
+
+  <div class="section-label">THIS WEEK — tap any day to view</div>
+  <div class="week-cards" id="week-cards"></div>
+
+  <div style="height:80px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: DAY PREVIEW (browse any day)
+══════════════════════════════════════════ -->
+<div id="screen-day-preview" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('dashboard')">←</button>
+  </div>
+  <div class="screen-body">
+    <div class="day-preview-tag" id="preview-day-tag">Monday</div>
+    <h2 class="screen-title" id="preview-day-name">Push Day</h2>
+    <p class="screen-sub" id="preview-day-meta"></p>
+    <div id="preview-exercise-list" class="preview-ex-list"></div>
+    <button class="btn btn-primary btn-full" id="preview-start-btn" onclick="App.startPreviewWorkout()">Start This Workout →</button>
+    <button class="btn btn-outline btn-full" onclick="App.go('dashboard')" style="margin-top:10px">Back</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: ACTIVE WORKOUT
+══════════════════════════════════════════ -->
+<div id="screen-workout" class="screen">
+  <div class="workout-header">
+    <button class="btn-back" onclick="App.go('dashboard')">←</button>
+    <div>
+      <div class="workout-day-label" id="workout-day-label">Monday</div>
+      <div class="workout-name-label" id="workout-name-label">Push Day</div>
+    </div>
+    <div class="workout-prog-text" id="workout-prog-text">0/0</div>
+  </div>
+  <div class="workout-progress-bar">
+    <div class="workout-progress-fill" id="workout-progress-fill"></div>
+  </div>
+  <div class="set-hint">👇 Tap each circle below to mark a set complete</div>
+  <div id="exercise-list" class="exercise-list"></div>
+  <div class="workout-footer">
+    <button class="btn btn-primary btn-full finish-btn" id="finish-btn" onclick="App.finishWorkout()">
+      ✓ Complete Workout
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: WORKOUT COMPLETE
+══════════════════════════════════════════ -->
+<div id="screen-complete" class="screen center-screen">
+  <div class="complete-content">
+    <div class="complete-burst">⚡</div>
+    <h2 class="complete-title">WORKOUT<br/>COMPLETE</h2>
+    <div class="complete-stats">
+      <div class="c-stat"><div class="c-val" id="c-exercises">0</div><div class="c-label">Exercises</div></div>
+      <div class="c-stat"><div class="c-val" id="c-pct">0%</div><div class="c-label">Completion</div></div>
+      <div class="c-stat"><div class="c-val" id="c-streak">0</div><div class="c-label">🔥 Streak</div></div>
+    </div>
+    <button class="btn btn-primary btn-xl" onclick="App.go('dashboard')">Back to Dashboard</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SETTINGS
+══════════════════════════════════════════ -->
+<div id="screen-settings" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('dashboard')">←</button>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Settings</h2>
+
+    <div class="settings-section-label">Account</div>
+    <div class="settings-list">
+      <div class="settings-item">
+        <div class="settings-label">Signed in as</div>
+        <div class="settings-value" id="settings-user">Guest</div>
+      </div>
+      <div class="settings-item tappable" onclick="App.go('edit-profile')">
+        <div class="settings-label">Edit Profile & Goals</div>
+        <div class="settings-arrow">→</div>
+      </div>
+      <div class="settings-item tappable" onclick="App.go('notifications')">
+        <div class="settings-label">Workout Reminder</div>
+        <div class="settings-value" id="settings-reminder">Not set</div>
+      </div>
+    </div>
+
+    <div class="settings-section-label">Appearance</div>
+    <div class="settings-list">
+      <div class="settings-item">
+        <div class="settings-label">Theme</div>
+        <div class="toggle-group">
+          <button class="pill" id="theme-dark" onclick="App.setTheme('dark')">Dark</button>
+          <button class="pill" id="theme-light" onclick="App.setTheme('light')">Light</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section-label">Data</div>
+    <div class="settings-list">
+      <div class="settings-item tappable" onclick="App.exportData()">
+        <div class="settings-label">Export Progress (JSON)</div>
+        <div class="settings-arrow">↓</div>
+      </div>
+      <div class="settings-item tappable" onclick="document.getElementById('import-file').click()">
+        <div class="settings-label">Import Progress (JSON)</div>
+        <div class="settings-arrow">↑</div>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="App.importData(event)"/>
+      <div class="settings-item tappable danger" onclick="App.resetData()">
+        <div class="settings-label">Reset All Data</div>
+        <div class="settings-arrow danger">✕</div>
+      </div>
+    </div>
+
+    <div class="settings-item tappable" onclick="Auth.signOut()" style="margin-top:16px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)">
+      <div class="settings-label" style="color:var(--danger)">Sign Out</div>
+    </div>
+
+    <div class="settings-version">WorkoutForge v2.0 · Evidence-based programming</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: EDIT PROFILE
+══════════════════════════════════════════ -->
+<div id="screen-edit-profile" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('settings')">←</button>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Edit Profile</h2>
+    <p class="screen-sub">Changes rebuild your workout plan.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Age</label>
+        <input type="number" id="ep-age" placeholder="25" min="13" max="99"/>
+      </div>
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="ep-weight" placeholder="70" min="30" max="300"/>
+      </div>
+      <div class="form-group">
+        <label>Height (cm)</label>
+        <input type="number" id="ep-height" placeholder="175" min="100" max="250"/>
+      </div>
+      <div class="form-group">
+        <label>Gender</label>
+        <select id="ep-gender">
+          <option value="">Select…</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group full">
+      <label>Experience</label>
+      <div class="pill-group" id="ep-experience">
+        <button class="pill" data-val="beginner" onclick="App.selectPill(this,'ep-experience')">Beginner</button>
+        <button class="pill" data-val="intermediate" onclick="App.selectPill(this,'ep-experience')">Intermediate</button>
+        <button class="pill" data-val="advanced" onclick="App.selectPill(this,'ep-experience')">Advanced</button>
+      </div>
+    </div>
+    <div class="form-group full">
+      <label>Training Style</label>
+      <div class="pill-group" id="ep-style">
+        <button class="pill" data-val="weights" onclick="App.selectPill(this,'ep-style')">Weights</button>
+        <button class="pill" data-val="calisthenics" onclick="App.selectPill(this,'ep-style')">Calisthenics</button>
+        <button class="pill" data-val="yoga" onclick="App.selectPill(this,'ep-style')">Yoga</button>
+        <button class="pill" data-val="pilates" onclick="App.selectPill(this,'ep-style')">Pilates</button>
+      </div>
+    </div>
+    <div class="form-group full">
+      <label>Goal</label>
+      <div class="pill-group" id="ep-goal">
+        <button class="pill" data-val="strength" onclick="App.selectPill(this,'ep-goal')">Strength</button>
+        <button class="pill" data-val="muscle" onclick="App.selectPill(this,'ep-goal')">Muscle</button>
+        <button class="pill" data-val="fatloss" onclick="App.selectPill(this,'ep-goal')">Fat Loss</button>
+        <button class="pill" data-val="general" onclick="App.selectPill(this,'ep-goal')">General</button>
+      </div>
+    </div>
+    <div id="ep-error" class="error-msg hidden"></div>
+    <button class="btn btn-primary btn-full" onclick="App.saveProfile()">Save & Rebuild Plan</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: NOTIFICATIONS
+══════════════════════════════════════════ -->
+<div id="screen-notifications" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.go('settings')">←</button>
+  </div>
+  <div class="screen-body">
+    <h2 class="screen-title">Reminder</h2>
+    <p class="screen-sub">Get notified when it's time to train.</p>
+    <div id="notif-status" class="warn-msg hidden"></div>
+    <div class="form-group full">
+      <label>Reminder Time</label>
+      <div class="pill-group" id="reminder-time-group">
+        <button class="pill" data-val="06:00" onclick="App.selectPill(this,'reminder-time-group')">6:00 AM</button>
+        <button class="pill" data-val="12:00" onclick="App.selectPill(this,'reminder-time-group')">12:00 PM</button>
+        <button class="pill" data-val="16:00" onclick="App.selectPill(this,'reminder-time-group')">4:00 PM</button>
+        <button class="pill" data-val="20:00" onclick="App.selectPill(this,'reminder-time-group')">8:00 PM</button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="App.saveReminder()">Save Reminder</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DISCLAIMER
+══════════════════════════════════════════ -->
+<div id="disclaimer" class="disclaimer hidden">
+  ⚠️ Weight suggestions are estimates only. Consult a fitness professional before starting a new programme.
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function(){});
+    });
+  }
+</script>
+<script src="script.js"></script>
+</body>
+</html>
